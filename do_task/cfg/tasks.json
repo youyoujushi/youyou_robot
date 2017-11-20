@@ -1,0 +1,42 @@
+[
+	{
+		"task_id"	:	1,
+		"description"	:	"起床闹钟",
+		"type"		:	0,
+		"time"		:	"2017-11-11 08:30:00",
+		"repeat_times"	:	5,
+		"repeat_interval":	60,
+		"actions"	:	
+			[
+				{
+					"type" : 0,
+					"dest_position":" 0 0 0 0 0 0 1",
+					"dis_error":0.1,
+					"dir_error":0.1
+				},
+				{
+					"type" : 1,
+					"text":"该起床了",
+				},
+				{
+					"type" : 3,
+					"dialogue":	
+						[
+							{
+							"say":"该起床了",
+							"listen"	:	
+								[
+									{
+										"by_order":"true",
+										"match":"false",
+										"text":["讲|说","英文|英语","讲|说","中文|汉语"]
+									}
+								]
+							}
+						]
+				}
+			]	
+	},
+
+	
+]

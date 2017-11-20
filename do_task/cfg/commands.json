@@ -1,0 +1,53 @@
+[
+	{
+		"command_id"	:	1,
+		"description"	:	"唤醒",
+		"patterns"	:	
+			[
+				{
+					"by_order":"true",
+					"match":"true",
+					"text":["优优"]
+				}
+			]	
+	},
+
+	{
+		"command_id"	:	2,
+		"description"	:	"中译英",
+		"patterns"	:	
+			[
+				{
+					"by_order":"true",
+					"match":"false",
+					"text":["讲|说","中文|汉语","讲|说","英文|英语"]
+				}
+			]	
+	},
+
+	{
+		"command_id"	:	3,
+		"description"	:	"英译中",
+		"patterns"	:	
+			[
+				{
+					"by_order":"true",
+					"match":"false",
+					"text":["讲|说","英文|英语","讲|说","中文|汉语"]
+				}
+			]	
+	},
+
+	{
+		"command_id"	:	4,
+		"description"	:	"停止翻译",
+		"patterns"	:	
+			[
+				{
+					"by_order":"false",
+					"match":"false",
+					"text":["停止|结束|不|别","翻译"]
+				}
+			]	
+	}
+]
