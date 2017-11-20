@@ -8,6 +8,8 @@
    of your system.
 
  *************************************************************/
+#include "servos.h"
+
 
 #ifdef USE_SERVOS
 

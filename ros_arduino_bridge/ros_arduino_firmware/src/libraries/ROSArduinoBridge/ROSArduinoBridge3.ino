@@ -21,7 +21,7 @@
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions
+    modification, are permitted provided that the following conditionse
     are met:
 
      * Redistributions of source code must retain the above copyright
@@ -45,26 +45,11 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-//#define USE_BASE      // Enable the base controller code
-#undef USE_BASE     // Disable the base controller code
-
-/* Define the motor controller and encoder library you are using */
-#ifdef USE_BASE
-   /* The Pololu VNH5019 dual motor driver shield */
-   #define POLOLU_VNH5019
-
-   /* The Pololu MC33926 dual motor driver shield */
-   //#define POLOLU_MC33926
-
-   /* The RoboGaia encoder shield */
-   #define ROBOGAIA
-   
-   /* Encoders directly attached to Arduino board */
-   //#define ARDUINO_ENC_COUNTER
-#endif
-
+#define USE_BASE      // Enable the base controller code
+#define ARDUINO_ENC_COUNTER
 #define USE_SERVOS  // Enable use of PWM servos as defined in servos.h
-//#undef USE_SERVOS     // Disable use of PWM servos
+#define USE_BUZZER
+#define USE_TEMP_HUMI
 
 /* Serial port baud rate */
 #define BAUDRATE     57600
@@ -72,10 +57,23 @@
 /* Maximum PWM signal */
 #define MAX_PWM        255
 
+#include "definePins.h"
+//#include <Scheduler.h>
+
+#ifdef USE_TEMP_HUMI
+#include "DHT.h"
+DHT dht(TEMP_HUMI_PIN, DHT11);
+#endif
+
+#ifdef USE_BUZZER
+  #include "YYJSBuzzer.h"
+  YYJSBuzzer buzzer(BUZZER_PIN,0);
+#endif
+
 #if defined(ARDUINO) && ARDUINO >= 100
-#include "Arduino.h"
+  #include "Arduino.h"
 #else
-#include "WProgram.h"
+  #include "WProgram.h"
 #endif
 
 /* Include definition of serial commands */
@@ -86,8 +84,9 @@
 
 /* Include servo support if required */
 #ifdef USE_SERVOS
-   #include <Servo.h>
-   #include "servos.h"
+//   #include <Servo.h>
+//   #include "servos.h"
+  #include "AdafruitServoDriver.h"
 #endif
 
 #ifdef USE_BASE
@@ -98,8 +97,8 @@
   #include "encoder_driver.h"
 
   /* PID parameters and functions */
-  #include "diff_controller.h"
-
+//  #include "diff_controller.h"
+  #include "omniwheel_controller.h"
   /* Run the PID loop at 30 times per second */
   #define PID_RATE           30     // Hz
 
@@ -111,8 +110,9 @@
 
   /* Stop the robot if it hasn't received a movement command
    in this number of milliseconds */
-  #define AUTO_STOP_INTERVAL 2000
+  #define AUTO_STOP_INTERVAL 200
   long lastMotorCommand = AUTO_STOP_INTERVAL;
+
 #endif
 
 /* Variable initialization */
@@ -128,20 +128,24 @@ char chr;
 char cmd;
 
 // Character arrays to hold the first and second arguments
-char argv1[16];
-char argv2[16];
+char argv1[48];
+char argv2[48];
+char argv3[48];
 
 // The arguments converted to integers
 long arg1;
 long arg2;
+long arg3;
 
 /* Clear the current command parameters */
 void resetCommand() {
   cmd = NULL;
   memset(argv1, 0, sizeof(argv1));
   memset(argv2, 0, sizeof(argv2));
+  memset(argv3, 0, sizeof(argv3));
   arg1 = 0;
   arg2 = 0;
+  arg3 = 0;
   arg = 0;
   index = 0;
 }
@@ -151,9 +155,10 @@ int runCommand() {
   int i = 0;
   char *p = argv1;
   char *str;
-  int pid_args[4];
+  int pid_args[12];
   arg1 = atoi(argv1);
   arg2 = atoi(argv2);
+  arg3 = atoi(argv3);
   
   switch(cmd) {
   case GET_BAUDRATE:
@@ -180,23 +185,30 @@ int runCommand() {
     Serial.println("OK");
     break;
   case PING:
-    Serial.println(Ping(arg1));
+    Serial.println(Ultrasound(arg1,arg2));
     break;
 #ifdef USE_SERVOS
   case SERVO_WRITE:
-    servos[arg1].setTargetPosition(arg2);
+//    servos[arg1].setTargetPosition(arg2);
+    setTargetPosition(arg1,arg2);
     Serial.println("OK");
     break;
   case SERVO_READ:
-    Serial.println(servos[arg1].getServo().read());
+//    Serial.println(servos[arg1].getServo().read());
+      Serial.println(readServoPosition(arg1));
     break;
 #endif
     
 #ifdef USE_BASE
   case READ_ENCODERS:
-    Serial.print(readEncoder(LEFT));
+//    Serial.print(readEncoder(LEFT));
+//    Serial.print(" ");
+//    Serial.println(readEncoder(RIGHT));
+    Serial.print(readEncoder(A_WHEEL));
     Serial.print(" ");
-    Serial.println(readEncoder(RIGHT));
+    Serial.print(readEncoder(B_WHEEL));
+    Serial.print(" ");
+    Serial.println(readEncoder(C_WHEEL));
     break;
    case RESET_ENCODERS:
     resetEncoders();
@@ -206,28 +218,85 @@ int runCommand() {
   case MOTOR_SPEEDS:
     /* Reset the auto stop timer */
     lastMotorCommand = millis();
-    if (arg1 == 0 && arg2 == 0) {
-      setMotorSpeeds(0, 0);
+    if (arg1 == 0 && arg2 == 0 && arg3 == 0) {
+      setMotorSpeeds(0, 0, 0);
       resetPID();
       moving = 0;
+    }else{
+      moving = 1;
     }
-    else moving = 1;
-    leftPID.TargetTicksPerFrame = arg1;
-    rightPID.TargetTicksPerFrame = arg2;
-    Serial.println("OK"); 
+
+      A_Wheel_PID.TargetTicksPerFrame = arg1;
+      B_Wheel_PID.TargetTicksPerFrame = arg2;
+      C_Wheel_PID.TargetTicksPerFrame = arg3;
+
+//      setMotorSpeeds(arg1,arg2,arg3);
+
+//    Serial.print("set speed "); 
+//    Serial.print(arg1);
+//    Serial.print(" ");
+//    Serial.print(arg2);
+//    Serial.print(" ");
+//    Serial.println(arg3);
+      Serial.println("OK");
     break;
   case UPDATE_PID:
     while ((str = strtok_r(p, ":", &p)) != '\0') {
        pid_args[i] = atoi(str);
        i++;
     }
-    Kp = pid_args[0];
-    Kd = pid_args[1];
-    Ki = pid_args[2];
-    Ko = pid_args[3];
+
+    A_Wheel_Kp = pid_args[0];
+    A_Wheel_Kd = pid_args[1];
+    A_Wheel_Ki = pid_args[2];
+    A_Wheel_Ko = pid_args[3];
+
+    B_Wheel_Kp = pid_args[4];
+    B_Wheel_Kd = pid_args[5];
+    B_Wheel_Ki = pid_args[6];
+    B_Wheel_Ko = pid_args[7];
+
+    C_Wheel_Kp = pid_args[8];
+    C_Wheel_Kd = pid_args[9];
+    C_Wheel_Ki = pid_args[10];
+    C_Wheel_Ko = pid_args[11];
     Serial.println("OK");
     break;
+  case READ_PIDIN:
+    Serial.print(readPidIn(A_WHEEL));
+    Serial.print(" ");
+    Serial.print(readPidIn(B_WHEEL));
+    Serial.print(" ");
+    Serial.println(readPidIn(C_WHEEL));
+    break;
+  case READ_PIDOUT:
+    Serial.print(readPidOut(A_WHEEL));
+    Serial.print(" ");
+    Serial.print(readPidOut(B_WHEEL));
+    Serial.print(" ");
+    Serial.println(readPidOut(C_WHEEL));
+    break;
 #endif
+  case BEEP:
+    if(arg1 == -1)
+      buzzer.stopBeep();
+    else
+      buzzer.startBeep(arg1);
+    Serial.println("OK");
+    break;
+  case TEMP_HUMI:
+#ifdef USE_TEMP_HUMI
+  {
+      // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
+    int h = dht.readHumidity();
+    // Read temperature as Celsius (the default)
+    int t = dht.readTemperature();
+    Serial.print(t);
+    Serial.print(" ");
+    Serial.println(h);
+  }
+#endif
+    break;
   default:
     Serial.println("Invalid Command");
     break;
@@ -241,40 +310,32 @@ void setup() {
 // Initialize the motor controller if used */
 #ifdef USE_BASE
   #ifdef ARDUINO_ENC_COUNTER
-    //set as inputs
-    DDRD &= ~(1<<LEFT_ENC_PIN_A);
-    DDRD &= ~(1<<LEFT_ENC_PIN_B);
-    DDRC &= ~(1<<RIGHT_ENC_PIN_A);
-    DDRC &= ~(1<<RIGHT_ENC_PIN_B);
-    
-    //enable pull up resistors
-    PORTD |= (1<<LEFT_ENC_PIN_A);
-    PORTD |= (1<<LEFT_ENC_PIN_B);
-    PORTC |= (1<<RIGHT_ENC_PIN_A);
-    PORTC |= (1<<RIGHT_ENC_PIN_B);
-    
-    // tell pin change mask to listen to left encoder pins
-    PCMSK2 |= (1 << LEFT_ENC_PIN_A)|(1 << LEFT_ENC_PIN_B);
-    // tell pin change mask to listen to right encoder pins
-    PCMSK1 |= (1 << RIGHT_ENC_PIN_A)|(1 << RIGHT_ENC_PIN_B);
-    
-    // enable PCINT1 and PCINT2 interrupt in the general interrupt mask
-    PCICR |= (1 << PCIE1) | (1 << PCIE2);
+    initEncoders();
   #endif
   initMotorController();
-  resetPID();
 #endif
 
 /* Attach servos if used */
-  #ifdef USE_SERVOS
-    int i;
-    for (i = 0; i < N_SERVOS; i++) {
-      servos[i].initServo(
-          servoPins[i],
-          stepDelay[i],
-          servoInitPosition[i]);
-    }
-  #endif
+#ifdef USE_SERVOS
+//    int i;
+//    for (i = 0; i < N_SERVOS; i++) {
+//      servos[i].initServo(
+//          servoPins[i],
+//          stepDelay[i],
+//          servoInitPosition[i]);
+//    }
+  initServo();
+  setTargetPosition(0,75);
+  setTargetPosition(1,60);
+#endif
+
+#ifdef USE_BUZZER
+//  Scheduler.startLoop(beepLoop);
+#endif
+
+#ifdef USE_TEMP_HUMI
+  dht.begin();
+#endif
 }
 
 /* Enter the main loop.  Read and parse input from the serial port
@@ -291,6 +352,7 @@ void loop() {
     if (chr == 13) {
       if (arg == 1) argv1[index] = NULL;
       else if (arg == 2) argv2[index] = NULL;
+      else if(arg == 3) argv3[index] = NULL;
       runCommand();
       resetCommand();
     }
@@ -301,6 +363,10 @@ void loop() {
       else if (arg == 1)  {
         argv1[index] = NULL;
         arg = 2;
+        index = 0;
+      }else if (arg == 2)  {
+        argv2[index] = NULL;
+        arg = 3;
         index = 0;
       }
       continue;
@@ -319,6 +385,10 @@ void loop() {
         argv2[index] = chr;
         index++;
       }
+      else if (arg == 3) {
+        argv3[index] = chr;
+        index++;
+      }
     }
   }
   
@@ -331,17 +401,29 @@ void loop() {
   
   // Check to see if we have exceeded the auto-stop interval
   if ((millis() - lastMotorCommand) > AUTO_STOP_INTERVAL) {;
-    setMotorSpeeds(0, 0);
+    setMotorSpeeds(0, 0 ,0);
     moving = 0;
   }
 #endif
 
 // Sweep servos
 #ifdef USE_SERVOS
-  int i;
-  for (i = 0; i < N_SERVOS; i++) {
-    servos[i].doSweep();
-  }
+//  int i;
+//  for (i = 0; i < N_SERVOS; i++) {
+//    servos[i].doSweep();
+//  }
 #endif
+
+#ifdef USE_BUZZER
+  buzzer.beep();
+#endif
+
+
 }
+
+#ifdef USE_BUZZER
+void beepLoop(){
+    buzzer.beep();
+}
+#endif
 

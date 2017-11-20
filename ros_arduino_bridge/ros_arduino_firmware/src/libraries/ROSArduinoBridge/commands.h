@@ -18,8 +18,18 @@
 #define UPDATE_PID     'u'
 #define DIGITAL_WRITE  'w'
 #define ANALOG_WRITE   'x'
-#define LEFT            0
-#define RIGHT           1
+#define READ_PIDIN    'i'
+#define READ_PIDOUT   'f'
+#define BEEP          'B' 
+#define TEMP_HUMI     'T' //获取温湿度
+
+#define ENC_TEST  'z'
+
+#define A_WHEEL         0
+#define B_WHEEL         1
+#define C_WHEEL         2
+#define FORWARDS    true
+#define BACKWARDS   false
 
 #endif
 

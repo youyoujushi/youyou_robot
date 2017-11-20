@@ -1,3 +1,6 @@
+
+#include <Servo.h>
+
 #ifndef SERVOS_H
 #define SERVOS_H
 
@@ -13,10 +16,10 @@
 int stepDelay [N_SERVOS] = { 0, 0 }; // ms
 
 // Pins
-byte servoPins [N_SERVOS] = { 3, 4 };
+byte servoPins [N_SERVOS] = { ULTRASONIC_MIDDLE_PIN, ULTRASONIC_BOTTOM_PIN };
 
 // Initial Position
-byte servoInitPosition [N_SERVOS] = { 90, 90 }; // [0, 180] degrees
+byte servoInitPosition [N_SERVOS] = { 75, 70 }; // [0, 180] degrees
 
 
 class SweepServo

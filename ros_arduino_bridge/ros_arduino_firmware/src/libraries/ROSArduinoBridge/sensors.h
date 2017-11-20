@@ -32,3 +32,27 @@ long Ping(int pin) {
   return(range);
 }
 
+long Ultrasound(int trig,int echo) {
+  long duration, range;
+
+  // The Ultrasound))) is triggered by a HIGH pulse of 2 or more microseconds.
+  // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
+  pinMode(trig, OUTPUT);
+  digitalWrite(trig, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trig, LOW);
+  
+  // The echo pin is used to read the signal from the Ultrasound))): a HIGH
+  // pulse whose duration is the time (in microseconds) from the sending
+  // of the ping to the reception of its echo off of an object.
+  pinMode(echo, INPUT);
+  duration = pulseIn(echo, HIGH);
+  // convert the time into meters
+  range = microsecondsToCm(duration);
+  
+  return(range);
+}
+
+
