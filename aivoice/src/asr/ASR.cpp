@@ -29,7 +29,9 @@ int ASR::init_xunfei(speech_rec_notifier asr_notifer){
 
     int ret = MSP_SUCCESS;
 	/* login params, please do keep the appid correct */
-	const char* login_params = "appid = 59450ad8, work_dir = .";
+	// const char* login_params = "appid = 59450ad8, work_dir = .";//youyou_robot
+    const char* login_params = "appid = 59c9cf37, work_dir = .";//fala_api
+    
     //  const char* login_params = "appid = 56ee43d0, work_dir = .";//树莓派
 
 	/*
@@ -96,6 +98,8 @@ int ASR::stopAsr(){
     int errcode = sr_stop_listening(&iat);         //停止录音和识别
 	if (errcode) {
 		printf("stop listen failed %d\n", errcode);
+        // ROS_DEBUG("%s","stop listen failed %d/n",errcode);
+        uninit();
 //        sr_uninit(&iat);
         return -1;
 	}

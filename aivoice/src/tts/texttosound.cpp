@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <ros/ros.h>
 #include "json.hpp"
+#include <sys/time.h>
 //#include <unistd.h>
 
 using json = nlohmann::json;
@@ -70,9 +71,10 @@ bool TextToSound::init(){
     if(ttsType == TTS_XUNFEI){
 
         /* 用户登录 */
-        // const char* login_params = "appid = 59450ad8, work_dir = .";//登录参数,appid与msc库绑定,请勿随意改动
-        const char* login_params = "appid = 56ee43d0, work_dir = .";//树莓派
-        
+        // const char* login_params = "appid = 59450ad8, work_dir = .";//登录参数,appid与msc库绑定,请勿随意改动 //youyou_robot
+        // const char* login_params = "appid = 56ee43d0, work_dir = .";//树莓派
+        const char* login_params = "appid = 59c9cf37, work_dir = .";//fala_api
+
         int ret = MSPLogin(NULL, NULL, login_params);//第一个参数是用户名，第二个参数是密码，第三个参数是登录参数，用户名和密码可在http://www.xfyun.cn注册获取
         if (MSP_SUCCESS != ret)
         {
@@ -136,7 +138,10 @@ string TextToSound::tts(std::string text,TTS_PARAM param){
 
     char fullPath[256];
     realpath("./",fullPath);
-    sprintf(fullPath,"%s/%ld_tts.wav",fullPath,(long)time(NULL));
+    struct timeval tv;
+    gettimeofday(&tv,NULL);
+    sprintf(fullPath,"%s/%d_%d_tts.wav",fullPath,tv.tv_sec,tv.tv_usec);
+    // sprintf(fullPath,"%s/%ld_tts.wav",fullPath,(long)time(NULL));
     ttsSoundPath = string(fullPath);
     
 

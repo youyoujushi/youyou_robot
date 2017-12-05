@@ -81,6 +81,9 @@ void PocketSphinxAsr::init(string hmmDir,string lmPath,string dictPath){
 
 bool PocketSphinxAsr::beginListen(psAsrResultFunc resultCallback){
 
+    if(isListening)
+        return true;
+
     if(resultCallback != NULL)
         asrCallbackFunc = resultCallback;
     
@@ -101,9 +104,12 @@ bool PocketSphinxAsr::beginListen(psAsrResultFunc resultCallback){
 }
 
 void PocketSphinxAsr::stopListen(){
+
+    if(!isListening)
+        return;
+
     void *ret = NULL;
     stopThread = TRUE;
-    sleep(1);
     // pthread_join(tid,&ret);
     // if(ret == (void*)1)
     //     ROS_INFO("%s","pocketsphinx asr线程关闭成功");
@@ -143,6 +149,8 @@ void* asrThread(PocketSphinxAsr *asr){
     utt_started = FALSE;
     ROS_INFO("%s","Ready....");
 
+    asr->isListening = true;
+
     while (!asr->stopThread) {
         
         if ((k = ad_read(ad, adbuf, 2048)) < 0)
@@ -172,5 +180,6 @@ void* asrThread(PocketSphinxAsr *asr){
     ps_end_utt(asr->ps);
     ad_close(ad);
     ROS_INFO("%s","PS asr识别线程退出");
+    asr->isListening = false;
     return (void*)1;
 }

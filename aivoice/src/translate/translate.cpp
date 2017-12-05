@@ -5,6 +5,8 @@
 #include <sstream>
 #include <iostream>
 #include "Translate.h"
+#include "trans.h"
+#include <ros/console.h>
 
 using namespace ros;
 using namespace std;
@@ -42,13 +44,24 @@ void translateCallback(const aivoice::translate_request_msgConstPtr& msg){
 	}
 }
 
+bool transServFunc(aivoice::trans::Request  &req,  
+         aivoice::trans::Response &res)  
+{  
+  ROS_DEBUG("%s","transServFunc: text:"+req.src_text+" srcLan:"+req.src_language+" destLan:"+req.dest_language);
+  string result = translate.tran(req.src_text,req.src_language,req.dest_language);
+  res.result_text = result;
+  return true;
+}
+
 int main(int argc, char *argv[])
 {
 
 	ros::init(argc, argv, "translate_node");
+	ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug);
 	ros::NodeHandle n;
 	tts_pub = n.advertise<aivoice::tts_msg>("tts_topic", 10);
     Subscriber sub = n.subscribe("translate_topic",10,translateCallback);
+	ServiceServer srv = n.advertiseService("translate_service", transServFunc); 
     spin();
 	return 0;
 }

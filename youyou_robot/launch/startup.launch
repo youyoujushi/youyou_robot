@@ -9,8 +9,10 @@
   <!--<arg name="odom_topic" default="/odom_ekf" />-->
   <arg name="laser_topic" default="scan" />
 
+  <include file="$(find aivoice)/launch/aivoice.launch" />
   <include file="$(find youyou_robot)/launch/robot_base.launch" />
 
+  <!--<include file="$(find do_task)/launch/do_task.launch" />-->
   <!-- <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" /> -->
 
   <!-- Run the map server -->

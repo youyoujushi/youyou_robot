@@ -30,7 +30,7 @@ extern bool robot_speaking;//机器人是否正在讲话
 // extern Timer silence_check_timer; //
 
 void pub_tts(string text,string voice);
-void pub_asr(string text,string voice);
+void pub_asr(string text);
 void pub_nlp(string text,string voice);
 void pub_trans(string text,string srcLang,string destLang,string type);
 #define silence_timeout 30 /*asr超时未识别到有效命令，自动进入静默状态，单位为秒*/

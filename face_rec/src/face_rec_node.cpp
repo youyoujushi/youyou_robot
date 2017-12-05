@@ -80,7 +80,7 @@ int main( int argc, char** argv )
     image_transport::ImageTransport it_(nh); //定义一个image_transport实例  
     image_transport::Subscriber image_sub_; //定义ROS图象接收器  
     //image_transport::Publisher image_pub_; //定义ROS图象发布器  
-    image_sub_ = it_.subscribe("/usb_cam/image_raw",10,imageReceived);
+    image_sub_ = it_.subscribe("/image_raw",10,imageReceived);
 
     cvNamedWindow("FaceRec",CV_WINDOW_AUTOSIZE);
 

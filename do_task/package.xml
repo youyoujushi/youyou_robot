@@ -55,8 +55,13 @@
   <build_depend>std_msgs</build_depend>
   <build_export_depend>aivoice</build_export_depend>
   <build_export_depend>move_base</build_export_depend>
+  <build_export_depend>move_base_msgs</build_export_depend>
   <build_export_depend>rospy</build_export_depend>
   <build_export_depend>std_msgs</build_export_depend>
+  <build_export_depend>face_rec</build_export_depend>
+  <build_export_depend>actionlib</build_export_depend>
+  <build_export_depend>actionlib_msgs</build_export_depend>
+  <build_export_depend>geometry_msgs</build_export_depend>
   <exec_depend>aivoice</exec_depend>
   <exec_depend>move_base</exec_depend>
   <exec_depend>rospy</exec_depend>

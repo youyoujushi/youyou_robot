@@ -23,7 +23,8 @@ public:
 	//pocketsphinx使用变量 
 	ps_decoder_t 	*ps;		
  	cmd_ln_t 		*config;
-	bool			stopThread;//线程结束标志	
+	bool			stopThread;//控制线程结束标志	
+	bool			isListening;//是否正在离线识别
 	psAsrResultFunc	asrCallbackFunc;//asr结果回调函数
 	
 public:

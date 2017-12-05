@@ -12,6 +12,11 @@ find_package(catkin REQUIRED COMPONENTS
   move_base
   rospy
   std_msgs
+  face_rec
+  actionlib
+  actionlib_msgs
+  geometry_msgs
+  move_base_msgs
 )
 catkin_package(DEPENDS)
 catkin_python_setup()
